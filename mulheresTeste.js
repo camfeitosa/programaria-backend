@@ -2,55 +2,76 @@
 
 const express = require('express') //carregando pacote 
 const router = express.Router() //configurando rota
+const { v4: uuidv4 } = require('uuid') //chamar
 
 const conectaBancoDeDados = require('./dataBase') //arquivo exportado do banco de dados
 conectaBancoDeDados() //chamando a função que conecta o bd
 
-const Mulher = require('./mulherModel')
-const mulherModel = require('./mulherModel')
 const app = express() // função chamada 'express' dentro do pacote instalado
 app.use(express.json())
 const porta = 3333
 
-//console.table(mulheres) Objeto excluido
+
+//criar lista inicial de mulheres
+const mulheres = [
+    {
+        id: '1',
+        nome: 'Camila' ,
+        imagem: 'link',
+        minibio: 'Programadora'
+    }, 
+
+    {
+        id:'2',
+        nome: 'Ada' ,
+        imagem: 'link',
+        minibio: 'Primeira programadora'
+    }, 
+
+    {
+        id: '3',
+        nome: 'Iana Chan' ,
+        imagem: 'link',
+        minibio: 'Fundadora'
+    }
+]
+
+//console.table(mulheres)
 
 // Verbos do protocolo HTTP recebem request e response
 //GET
-async function mostraMulheres(request, response){
-    try {
-        const mulheresDoBanco = await Mulher.find()
-
-        response.json(mulheresDoBanco)
-    } catch (error) {
-        console.log(erro)
-    }
+function mostraMulheres(request, response){
+    response.json(mulheres) // usar a const criada
 }
 
 //POST
-async function criaMulher(request, response){
-    const novaMulher = new Mulher({
+function criaMulher(request, response){
+    const novaMulher = {
+        id: uuidv4(),
         nome: request.body.nome,
         imagem: request.body.imagem,
-        minibio: request.body.minibio,
-        citacao: request.body.citacao
-     })
+        minibio: request.body.minibio
+    }
 
-     try {
-        const mulherCriada = await novaMulher.save()
-        response.status(201).json(mulherCriada) 
-     } catch (error) {
-        console.log(erro)
-     }
+    mulheres.push(novaMulher)
+
+    response.json(mulheres)
 }
 
 //PATCH
-async function corrigeMulher(request, response){
-    try {
-        const mulherEncontrada = await Mulher.findById(request.params.id)
-        
+function corrigeMulher(request, response){
+    function encontraMulher(mulher){ 
+        if(mulher.id === request.params.id){ 
+            return mulher
+        }
+    }
+
+    const mulherEncontrada = mulheres.find(encontraMulher) //vai na lista e procura mulher, ao encontrar chama a função e faz a condição
+
     if(request.body.nome){
         mulherEncontrada.nome = request.body.nome
     }
+    
     
     if(request.body.minibio){
         mulherEncontrada.minibio = request.body.minibio
@@ -59,23 +80,12 @@ async function corrigeMulher(request, response){
     if(request.body.imagem){
         mulherEncontrada.imagem = request.body.imagem
     }
-    
-    if(request.body.citacao){
-        mulherEncontrada.citacao = request.body.citacao
-    }
 
-    const mulherAtualizada = await mulherEncontrada.save()
-
-    response.json(mulherAtualizada)
-
-    } catch (error) {
-        console.log(erro)
-    }
-
+    response.json(mulheres)
 }
 
 //DELETE
-async function deletaMulher(request, response){
+function deletaMulher(request, response){
     function todasMenosEla(mulher){
         if (mulher.id !== request.params.id){
             return mulher
