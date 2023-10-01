@@ -2,17 +2,21 @@
 
 const express = require('express') //carregando pacote 
 const router = express.Router() //configurando rota
+const cors = require('cors') // pacote cors - permite consumir a API no front
+
 
 const conectaBancoDeDados = require('./dataBase') //arquivo exportado do banco de dados
 conectaBancoDeDados() //chamando a função que conecta o bd
 
 const Mulher = require('./mulherModel')
-const mulherModel = require('./mulherModel')
+
+// const mulherModel = require('./mulherModel')
+
 const app = express() // função chamada 'express' dentro do pacote instalado
 app.use(express.json())
-const porta = 3333
+app.use(cors())
 
-//console.table(mulheres) Objeto excluido
+const porta = 3333
 
 // Verbos do protocolo HTTP recebem request e response
 //GET
@@ -22,7 +26,7 @@ async function mostraMulheres(request, response){
 
         response.json(mulheresDoBanco)
     } catch (error) {
-        console.log(erro)
+        console.log(error)
     }
 }
 
@@ -39,7 +43,7 @@ async function criaMulher(request, response){
         const mulherCriada = await novaMulher.save()
         response.status(201).json(mulherCriada) 
      } catch (error) {
-        console.log(erro)
+        console.log(error)
      }
 }
 
@@ -69,22 +73,19 @@ async function corrigeMulher(request, response){
     response.json(mulherAtualizada)
 
     } catch (error) {
-        console.log(erro)
+        console.log(error)
     }
 
 }
 
 //DELETE
 async function deletaMulher(request, response){
-    function todasMenosEla(mulher){
-        if (mulher.id !== request.params.id){
-            return mulher
-        }
+    try {
+        await Mulher.findByIdAndDelete(request.params.id)
+        response.json({ mensagem: "Mulher deletada"})
+    } catch (error) {
+        console.log(error)
     }
-
-    const mulheresQueFicam = mulheres.filter(todasMenosEla)
-
-    response.json(mulheresQueFicam)
 }
 
 
